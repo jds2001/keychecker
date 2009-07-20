@@ -50,10 +50,9 @@ if __name__ == '__main__':
     options, args = parser.parse_args()
     buildKeyList()
     pkgs = {}
-    pkgs['unsigned'] = []
     for keyname in pubkeys.itervalues():
         pkgs[keyname] = []
-    pkgs['unAsigned'] = []
+    pkgs['unsigned'] = []
     if len(args) != 0:
         for pkg in args:
             getPkg(pkg)
