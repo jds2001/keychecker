@@ -24,7 +24,8 @@ def getSig(hdr):
         try:
             return (getPkgNevra(hdr), pubkeys[keyid])
         except KeyError:
-            return (getPkgNevra(hdr), pubkeys['unknown'])
+            pubkeys[keyid] = 'Unkown key %s' % keyid
+            return (getPkgNevra(hdr), pubkeys[keyid])
     else:
         return (getPkgNevra(hdr), 'unsigned')
 def getPkg(name=None):
@@ -49,6 +50,7 @@ if __name__ == '__main__':
     options, args = parser.parse_args()
     buildKeyList()
     pkgs = {}
+    pkgs['unsigned'] = []
     for keyname in pubkeys.itervalues():
         pkgs[keyname] = []
     pkgs['unAsigned'] = []
