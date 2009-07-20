@@ -1,5 +1,26 @@
 #!/usr/bin/python
-import rpm, rpmUtils.miscutils, sys
+import rpm, sys
+try:
+    from rpmUtils.miscutils import getSigInfo
+except ImportError:
+    import locale
+    def getSigInfo(hdr):
+        """checks signature from an hdr hand back signature information and/or
+        an error code"""
+        locale.setlocale(locale.LC_ALL, 'C')
+        string = '%|DSAHEADER?{%{DSAHEADER:pgpsig}}:{%|RSAHEADER?{%{RSAHEADER:pgpsig}}:{%|SIGGPG?{%{SIGGPG:pgpsig}}:{%|SIGPGP?{%{SIGPGP:pgpsig}}:{(none)}|}|}|}|'
+        siginfo = hdr.sprintf(string)
+        if siginfo != '(none)':
+            error = 0
+            sigtype, sigdate, sigid = siginfo.split(',')
+        else:
+            error = 101
+            sigtype = 'MD5'
+            sigdate = 'None'
+            sigid = 'None'
+        infotuple = (sigtype, sigdate, sigid)
+        return error, infotuple
+
 from optparse import OptionParser
 
 ts=rpm.TransactionSet()
@@ -9,7 +30,7 @@ pubkeys['unknown'] = 'Unknown signing key'
 def buildKeyList():
     keys = ts.dbMatch(rpm.RPMTAG_NAME, 'gpg-pubkey')
     for hdr in keys:
-        pubkeys[hdr[rpm.RPMTAG_VERSION]]=hdr[rpm.RPMTAG_SUMMARY][4:].rsplit('<',1)[0].rstrip()
+        pubkeys[hdr[rpm.RPMTAG_VERSION]]=hdr[rpm.RPMTAG_SUMMARY][4:].split('<',1)[0].rstrip()
 def getPkgNevra(hdr):
     if hdr[rpm.RPMTAG_EPOCH]:
         return '%s-%s:%s-%s.%s' % ( hdr[rpm.RPMTAG_NAME], hdr[rpm.RPMTAG_EPOCH],
@@ -20,7 +41,7 @@ def getPkgNevra(hdr):
                 hdr[rpm.RPMTAG_RELEASE], hdr[rpm.RPMTAG_ARCH] )
 def getSig(hdr):
     if hdr[rpm.RPMTAG_DSAHEADER]:
-        keyid = rpmUtils.miscutils.getSigInfo(hdr)[1][2][16:]
+        keyid = getSigInfo(hdr)[1][2][16:]
         try:
             return (getPkgNevra(hdr), pubkeys[keyid])
         except KeyError:
@@ -38,7 +59,12 @@ def getPkg(name=None):
         exists = True
         if hdr[rpm.RPMTAG_NAME] == 'gpg-pubkey': continue
         nevra, key = getSig(hdr)
-        pkgs[key].append(nevra)
+        try:
+            pkgs[key].append(nevra)
+        except KeyError:
+            pkgs[key] = []
+            pkgs[key].append(nevra)
+
     if not exists:
         sys.stderr.write('No such package %s\n' % name)
 
