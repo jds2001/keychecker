@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import rpm, sys
+import rpm, sys, errno
 try:
     from rpmUtils.miscutils import getSigInfo
 except ImportError:
@@ -88,13 +88,21 @@ if __name__ == '__main__':
         for pkg in pkgs.iteritems():
             if pkg[1]:
                 for pkginstance in pkg[1]:
-                    print '%s,%s' % (pkginstance, pkg[0])
+                    try:
+                        print '%s,%s' % (pkginstance, pkg[0])
+                    except IOError, e:
+                        if e.errno == errno.EPIPE: sys.exit(1)
+                        else: raise
     else:
         for pkg in pkgs.iteritems():
             if pkg[1]:
                 print pkg[0]
                 print '-' * len(pkg[0])
                 for pkginstance in pkg[1]:
-                    print pkginstance
+                    try:
+                        print pkginstance
+                    except IOError, e:
+                        if e.errno == errno.EPIPE: sys.exit(1)
+                        else: raise
                 print
 
