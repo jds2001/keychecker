@@ -1,5 +1,8 @@
-#!/usr/bin/python
-import rpm, sys, errno
+#!/usr/bin/python -tt
+
+import rpm
+import sys
+import errno
 try:
     from rpmUtils.miscutils import getSigInfo
 except ImportError:
@@ -24,14 +27,15 @@ except ImportError:
 from optparse import OptionParser
 
 ts=rpm.TransactionSet()
-pubkeys={}
-pubkeys['unknown'] = 'Unknown signing key'
 
 def buildKeyList():
+    '''Build a dict of public keys in the rpm database'''
     keys = ts.dbMatch(rpm.RPMTAG_NAME, 'gpg-pubkey')
     for hdr in keys:
         pubkeys[hdr[rpm.RPMTAG_VERSION]]=hdr[rpm.RPMTAG_SUMMARY][4:].split('<',1)[0].rstrip()
+
 def getPkgNevra(hdr):
+    '''Return a formatted string of the nevra of a header object'''
     if hdr[rpm.RPMTAG_EPOCH]:
         return '%s-%s:%s-%s.%s' % ( hdr[rpm.RPMTAG_NAME], hdr[rpm.RPMTAG_EPOCH],
                 hdr[rpm.RPMTAG_VERSION], hdr[rpm.RPMTAG_RELEASE],
@@ -39,7 +43,12 @@ def getPkgNevra(hdr):
     else:
         return '%s-%s-%s.%s' % ( hdr[rpm.RPMTAG_NAME], hdr[rpm.RPMTAG_VERSION],
                 hdr[rpm.RPMTAG_RELEASE], hdr[rpm.RPMTAG_ARCH] )
+
 def getSig(hdr):
+    '''Given an rpm header object, extract the signing key, if any.
+
+    Returns a tuple of the name of the package nevra, and the name of the
+    signing key.'''
     if hdr[rpm.RPMTAG_DSAHEADER]:
         keyid = getSigInfo(hdr)[1][2][16:]
         try:
@@ -49,15 +58,22 @@ def getSig(hdr):
             return (getPkgNevra(hdr), pubkeys[keyid])
     else:
         return (getPkgNevra(hdr), 'unsigned')
+
 def getPkg(name=None):
+    '''Get package signing keys from the RPM database
+
+    Optionally accepts a name of a package, if present, restrict the search to
+    all instances of that package name, otherwise, the entire RPM database is
+    processed. Ignores entries that are GPG public keys in the rpmdb'''
     if name:
-        mi=ts.dbMatch(rpm.RPMTAG_NAME, name)
+        mi = ts.dbMatch(rpm.RPMTAG_NAME, name)
     else:
-        mi=ts.dbMatch()
+        mi = ts.dbMatch()
     exists = False
     for hdr in mi:
         exists = True
-        if hdr[rpm.RPMTAG_NAME] == 'gpg-pubkey': continue
+        if hdr[rpm.RPMTAG_NAME] == 'gpg-pubkey':
+            continue
         nevra, key = getSig(hdr)
         try:
             pkgs[key].append(nevra)
@@ -68,12 +84,44 @@ def getPkg(name=None):
     if not exists:
         sys.stderr.write('No such package %s\n' % name)
 
+def csvOutput(pkgs):
+    '''Output data in csv format'''
+
+    for pkg in pkgs.iteritems():
+        if pkg[1]:
+            for pkginstance in pkg[1]:
+                try:
+                    print '%s,%s' % (pkginstance,pkg[0])
+                except IOError, e:
+                    if e.errno == errno.EPIPE:
+                        sys.exit(1)
+                    else:
+                        raise
+
+def listOutput(pkgs):
+    '''Output data in separated list format'''
+
+    for pkg in pkgs.iteritems():
+        if pkg[1]:
+            print pkg[0]
+            print '-' * len(pkg[0])
+            for pkginstance in pkg[1]:
+                try:
+                    print pkginstance
+                except IOError, e:
+                    if e.errno == errno.EPIPE:
+                        sys.exit(1)
+                    else:
+                        raise
+            print
+
 if __name__ == '__main__':
     usage = '%prog [options] pkg1 pkg2...'
     parser = OptionParser(usage)
     parser.add_option('-m', '--machine-readable', action='store_true',
         dest='mr', help='Produce machine readable output')
     options, args = parser.parse_args()
+    pubkeys = {}
     buildKeyList()
     pkgs = {}
     for keyname in pubkeys.itervalues():
@@ -85,24 +133,6 @@ if __name__ == '__main__':
     else:
         getPkg()
     if options.mr:
-        for pkg in pkgs.iteritems():
-            if pkg[1]:
-                for pkginstance in pkg[1]:
-                    try:
-                        print '%s,%s' % (pkginstance, pkg[0])
-                    except IOError, e:
-                        if e.errno == errno.EPIPE: sys.exit(1)
-                        else: raise
+        csvOutput(pkgs)
     else:
-        for pkg in pkgs.iteritems():
-            if pkg[1]:
-                print pkg[0]
-                print '-' * len(pkg[0])
-                for pkginstance in pkg[1]:
-                    try:
-                        print pkginstance
-                    except IOError, e:
-                        if e.errno == errno.EPIPE: sys.exit(1)
-                        else: raise
-                print
-
+        listOutput(pkgs)
