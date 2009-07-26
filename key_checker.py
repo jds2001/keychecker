@@ -71,7 +71,7 @@ def getSig(hdr):
 
     Returns a tuple of the name of the package nevra, and the name of the
     signing key.'''
-    if hdr[rpm.RPMTAG_DSAHEADER]:
+    if hdr[rpm.RPMTAG_DSAHEADER] or hdr[rpm.RPMTAG_RSAHEADER]:
         keyid = getSigInfo(hdr)[1][2][16:]
         try:
             return (getPkgNevra(hdr), pubkeys[keyid])
