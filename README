@@ -1,0 +1,8 @@
+This nifty little script will take either the RPM's that you specify on the
+commandline, or the entire RPM database if none are specified, and output in
+either a machine-readable comma separated form (with the -m option), or a more
+human readable list what key was used to sign the RPM's.
+
+This depends on the keys being imported into the RPM database. If they aren't,
+then they are categorized as "Unknown key <keyid>". If packages are unsigned,
+they are categorized as such.
