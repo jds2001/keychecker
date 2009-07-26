@@ -20,7 +20,8 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-
+# bump this when doing a release
+version = '%prog 0.1'
 import rpm
 import sys
 import errno
@@ -138,7 +139,7 @@ def listOutput(pkgs):
 
 if __name__ == '__main__':
     usage = '%prog [options] pkg1 pkg2...'
-    parser = OptionParser(usage)
+    parser = OptionParser(usage, version=version)
     parser.add_option('-m', '--machine-readable', action='store_true',
         dest='mr', help='Produce machine readable output')
     options, args = parser.parse_args()
