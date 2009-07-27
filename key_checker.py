@@ -100,8 +100,7 @@ def getPkg(name=None):
         try:
             pkgs[key].append(nevra)
         except KeyError:
-            pkgs[key] = []
-            pkgs[key].append(nevra)
+            pkgs[key] = [nevra]
 
     if not exists:
         sys.stderr.write('No such package %s\n' % name)
