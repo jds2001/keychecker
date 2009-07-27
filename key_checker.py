@@ -76,7 +76,7 @@ def getSig(hdr):
         try:
             return (getPkgNevra(hdr), pubkeys[keyid])
         except KeyError:
-            pubkeys[keyid] = 'Unkown key %s' % keyid
+            pubkeys[keyid] = 'Unknown key %s' % keyid
             return (getPkgNevra(hdr), pubkeys[keyid])
     else:
         return (getPkgNevra(hdr), 'unsigned')
