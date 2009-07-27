@@ -1,6 +1,6 @@
 Name:           keychecker
 Version:        0.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Generate list of installed packages sorted by GPG key
 
 Group:          Applications/System
@@ -22,8 +22,7 @@ Separately list rpm's based on the GPG key they were signed with
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -dm 0755 $RPM_BUILD_ROOT/%{_bindir}
-install -m 0755 key_checker.py $RPM_BUILD_ROOT/%{_bindir}/keychecker
+install -Dpm 0755 key_checker.py $RPM_BUILD_ROOT/%{_bindir}/keychecker
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -35,5 +34,8 @@ rm -rf $RPM_BUILD_ROOT
 %doc README LICENSE
 
 %changelog
+* Sun Jul 26 2009 Jon Stanley <jonstanley@gmail.com> - 0.1-2
+- Review fixup (combine install lines)
+
 * Sun Jul 26 2009 Jon Stanley <jonstanley@gmail.com> - 0.1-1
 - Initial package
