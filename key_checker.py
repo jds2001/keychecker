@@ -109,9 +109,9 @@ def getPkg(name=None):
 def csvOutput(pkgs):
     '''Output data in csv format'''
 
-    for pkg in pkgs.iteritems():
+    for pkg in sorted(pkgs.iteritems()):
         if pkg[1]:
-            for pkginstance in pkg[1]:
+            for pkginstance in sorted(pkg[1]):
                 try:
                     print '%s,%s' % (pkginstance,pkg[0])
                 except IOError, e:
@@ -123,11 +123,11 @@ def csvOutput(pkgs):
 def listOutput(pkgs):
     '''Output data in separated list format'''
 
-    for pkg in pkgs.iteritems():
+    for pkg in sorted(pkgs.iteritems()):
         if pkg[1]:
             print pkg[0]
             print '-' * len(pkg[0])
-            for pkginstance in pkg[1]:
+            for pkginstance in sorted(pkg[1]):
                 try:
                     print pkginstance
                 except IOError, e:
