@@ -22,7 +22,7 @@ Separately list rpm's based on the GPG key they were signed with
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -Dpm 0755 key_checker.py $RPM_BUILD_ROOT/%{_bindir}keychecker
+install -Dpm 0755 key_checker.py $RPM_BUILD_ROOT%{_bindir}/keychecker
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -30,7 +30,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}keychecker
+%{_bindir}/keychecker
 %doc README LICENSE known_keys.txt
 
 %changelog
