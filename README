@@ -5,4 +5,6 @@ human readable list what key was used to sign the RPM's.
 
 This depends on the keys being imported into the RPM database. If they aren't,
 then they are categorized as "Unknown key <keyid>". If packages are unsigned,
-they are categorized as such.
+they are categorized as such. As an alternative the behavior for unknown keys,
+with the -k option, you can specify a file that has a comma separated list of
+keyid, description lines (a sample is included in this directory)

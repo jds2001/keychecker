@@ -21,7 +21,7 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # bump this when doing a release
-version = '%prog 0.1'
+version = '%prog 0.2'
 import rpm
 import sys
 import errno
@@ -48,13 +48,26 @@ except ImportError:
 
 from optparse import OptionParser
 
+# Initialize global vars
 ts=rpm.TransactionSet()
+pubkeys={}
+pkgs={}
 
-def buildKeyList():
+def buildKeyList(file=None):
     '''Build a dict of public keys in the rpm database'''
     keys = ts.dbMatch(rpm.RPMTAG_NAME, 'gpg-pubkey')
     for hdr in keys:
         pubkeys[hdr[rpm.RPMTAG_VERSION]]=hdr[rpm.RPMTAG_SUMMARY][4:].split('<',1)[0].rstrip()
+    if file:
+        lines = open(file, 'r').read().splitlines()
+        for line in lines:
+            splitline=line.split(',')
+            try:
+                pubkeys[splitline[0]]=splitline[1]
+            except IndexError:
+                sys.stderr.write('invalid input line %s\n' % line)
+                sys.exit(1)
+
 
 def getPkgNevra(hdr):
     '''Return a formatted string of the nevra of a header object'''
@@ -141,10 +154,14 @@ if __name__ == '__main__':
     parser = OptionParser(usage, version=version)
     parser.add_option('-m', '--machine-readable', action='store_true',
         dest='mr', help='Produce machine readable output')
+    parser.add_option('-k', '--known-keys', dest='file', help='Read list of known keys from FILE', metavar='FILE')
     options, args = parser.parse_args()
     pubkeys = {}
-    buildKeyList()
-    pkgs = {}
+    if options.file:
+        buildKeyList(options.file)
+    else:
+        buildKeyList()
+    #pkgs = {}
     for keyname in pubkeys.itervalues():
         pkgs[keyname] = []
     pkgs['unsigned'] = []
