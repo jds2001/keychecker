@@ -94,6 +94,28 @@ def getSig(hdr):
     else:
         return (getPkgNevra(hdr), 'unsigned')
 
+def readStdin():
+    '''Reads stdin, compare it to the known keys, and add it to the pkgs dict'''
+    raw_lines = sys.stdin.read().splitlines()
+    for raw_line in raw_lines:
+        line = raw_line.split('|')
+        try:
+            keyId = line[1].split(',')[2][16:]
+        except IndexError:
+            keyId = 'unsigned'
+        if keyId == 'unsigned':
+            pkgs['unsigned'].append(line[0])
+        else:
+            try:
+                key = pubkeys[keyId]
+            except KeyError:
+                pubkeys[keyId] = 'Unknown key %s' % keyId
+                key = pubkeys[keyId]
+            try:
+                pkgs[key].append(line[0])
+            except KeyError:
+                pkgs[key] = [line[0]]
+
 def getPkg(name=None):
     '''Get package signing keys from the RPM database
 
@@ -155,6 +177,8 @@ if __name__ == '__main__':
     parser.add_option('-m', '--machine-readable', action='store_true',
         dest='mr', help='Produce machine readable output')
     parser.add_option('-k', '--known-keys', dest='file', help='Read list of known keys from FILE', metavar='FILE')
+    parser.add_option('-s', '--from-stdin', dest='stdin', action='store_true', \
+            help='Read a formatted list from stdin')
     options, args = parser.parse_args()
     pubkeys = {}
     if options.file:
@@ -165,11 +189,14 @@ if __name__ == '__main__':
     for keyname in pubkeys.itervalues():
         pkgs[keyname] = []
     pkgs['unsigned'] = []
-    if len(args) != 0:
-        for pkg in args:
-            getPkg(pkg)
+    if options.stdin:
+        readStdin()
     else:
-        getPkg()
+        if len(args) != 0:
+            for pkg in args:
+                getPkg(pkg)
+        else:
+            getPkg()
     if options.mr:
         csvOutput(pkgs)
     else:
