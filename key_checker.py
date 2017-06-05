@@ -145,7 +145,7 @@ def getPkg(name=None):
 def csvOutput(pkgs):
     '''Output data in csv format'''
 
-    for pkg in sorted(pkgs.iteritems()):
+    for pkg in sorted(pkgs.items()):
         if pkg[1]:
             for pkginstance in sorted(pkg[1]):
                 try:
@@ -159,7 +159,7 @@ def csvOutput(pkgs):
 def listOutput(pkgs):
     '''Output data in separated list format'''
 
-    for pkg in sorted(pkgs.iteritems()):
+    for pkg in sorted(pkgs.items()):
         if pkg[1]:
             print(pkg[0])
             print('-' * len(pkg[0]))
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     else:
         buildKeyList()
     #pkgs = {}
-    for keyname in pubkeys.itervalues():
+    for keyname in pubkeys.values():
         pkgs[keyname] = []
     pkgs['unsigned'] = []
     if options.stdin:
