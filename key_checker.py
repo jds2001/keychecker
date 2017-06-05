@@ -59,7 +59,7 @@ def buildKeyList(file=None):
     '''Build a dict of public keys in the rpm database'''
     keys = ts.dbMatch(rpm.RPMTAG_NAME, 'gpg-pubkey')
     for hdr in keys:
-        pubkeys[hdr[rpm.RPMTAG_VERSION]]=hdr[rpm.RPMTAG_SUMMARY][4:].split('<',1)[0].rstrip()
+        pubkeys[hdr[rpm.RPMTAG_VERSION]] = hdr[rpm.RPMTAG_SUMMARY][4:-1]
     if file:
         lines = open(file, 'r').read().splitlines()
         for line in lines:
