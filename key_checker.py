@@ -20,6 +20,8 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+from __future__ import print_function
+
 # bump this when doing a release
 version = '%prog 0.2'
 import rpm
@@ -138,7 +140,7 @@ def getPkg(name=None):
             pkgs[key] = [nevra]
 
     if not exists:
-        sys.stderr.write('No such package %s\n' % name)
+        print('No such package %s\n' % name, file=sys.stderr)
 
 def csvOutput(pkgs):
     '''Output data in csv format'''
@@ -147,7 +149,7 @@ def csvOutput(pkgs):
         if pkg[1]:
             for pkginstance in sorted(pkg[1]):
                 try:
-                    print '%s,%s' % (pkginstance,pkg[0])
+                    print('%s,%s' % (pkginstance,pkg[0]))
                 except IOError, e:
                     if e.errno == errno.EPIPE:
                         sys.exit(1)
@@ -159,17 +161,17 @@ def listOutput(pkgs):
 
     for pkg in sorted(pkgs.iteritems()):
         if pkg[1]:
-            print pkg[0]
-            print '-' * len(pkg[0])
+            print(pkg[0])
+            print('-' * len(pkg[0]))
             for pkginstance in sorted(pkg[1]):
                 try:
-                    print pkginstance
+                    print(pkginstance)
                 except IOError, e:
                     if e.errno == errno.EPIPE:
                         sys.exit(1)
                     else:
                         raise
-            print
+            print()
 
 if __name__ == '__main__':
     usage = '%prog [options] pkg1 pkg2...'
