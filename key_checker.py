@@ -67,8 +67,7 @@ def buildKeyList(file=None):
             try:
                 pubkeys[splitline[0]]=splitline[1]
             except IndexError:
-                sys.stderr.write('invalid input line %s\n' % line)
-                sys.exit(1)
+                sys.exit('invalid input line %s\n' % line)
 
 
 def getPkgNevra(hdr):
