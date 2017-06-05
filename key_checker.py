@@ -150,7 +150,7 @@ def csvOutput(pkgs):
             for pkginstance in sorted(pkg[1]):
                 try:
                     print('%s,%s' % (pkginstance,pkg[0]))
-                except IOError, e:
+                except IOError as e:
                     if e.errno == errno.EPIPE:
                         sys.exit(1)
                     else:
@@ -166,7 +166,7 @@ def listOutput(pkgs):
             for pkginstance in sorted(pkg[1]):
                 try:
                     print(pkginstance)
-                except IOError, e:
+                except IOError as e:
                     if e.errno == errno.EPIPE:
                         sys.exit(1)
                     else:
