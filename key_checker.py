@@ -67,18 +67,26 @@ def buildKeyList(file=None):
             try:
                 pubkeys[splitline[0]]=splitline[1]
             except IndexError:
-                sys.exit('invalid input line %s\n' % line)
+                sys.exit('invalid input line {0}'.format(line))
 
 
 def getPkgNevra(hdr):
     '''Return a formatted string of the nevra of a header object'''
     if hdr[rpm.RPMTAG_EPOCH]:
-        return '%s-%s:%s-%s.%s' % ( hdr[rpm.RPMTAG_NAME], hdr[rpm.RPMTAG_EPOCH],
-                hdr[rpm.RPMTAG_VERSION], hdr[rpm.RPMTAG_RELEASE],
-                hdr[rpm.RPMTAG_ARCH])
+        return '{0}-{1}:{2}-{3}.{4}'.format(
+            hdr[rpm.RPMTAG_NAME],
+            hdr[rpm.RPMTAG_EPOCH],
+            hdr[rpm.RPMTAG_VERSION],
+            hdr[rpm.RPMTAG_RELEASE],
+            hdr[rpm.RPMTAG_ARCH]
+        )
     else:
-        return '%s-%s-%s.%s' % ( hdr[rpm.RPMTAG_NAME], hdr[rpm.RPMTAG_VERSION],
-                hdr[rpm.RPMTAG_RELEASE], hdr[rpm.RPMTAG_ARCH] )
+        return '{0}-{1}-{2}.{3}'.format(
+            hdr[rpm.RPMTAG_NAME],
+            hdr[rpm.RPMTAG_VERSION],
+            hdr[rpm.RPMTAG_RELEASE],
+            hdr[rpm.RPMTAG_ARCH]
+        )
 
 def getSig(hdr):
     '''Given an rpm header object, extract the signing key, if any.
@@ -90,7 +98,7 @@ def getSig(hdr):
         try:
             return (getPkgNevra(hdr), pubkeys[keyid])
         except KeyError:
-            pubkeys[keyid] = 'Unknown key %s' % keyid
+            pubkeys[keyid] = 'Unknown key {0}'.format(keyid)
             return (getPkgNevra(hdr), pubkeys[keyid])
     else:
         return (getPkgNevra(hdr), 'unsigned')
@@ -110,7 +118,7 @@ def readStdin():
             try:
                 key = pubkeys[keyId]
             except KeyError:
-                pubkeys[keyId] = 'Unknown key %s' % keyId
+                pubkeys[keyId] = 'Unknown key {0}'.format(keyId)
                 key = pubkeys[keyId]
             try:
                 pkgs[key].append(line[0])
@@ -139,7 +147,7 @@ def getPkg(name=None):
             pkgs[key] = [nevra]
 
     if not exists:
-        print('No such package %s\n' % name, file=sys.stderr)
+        print('No such package {0}'.format(name), file=sys.stderr)
 
 def csvOutput(pkgs):
     '''Output data in csv format'''
@@ -148,7 +156,7 @@ def csvOutput(pkgs):
         if pkg[1]:
             for pkginstance in sorted(pkg[1]):
                 try:
-                    print('%s,%s' % (pkginstance,pkg[0]))
+                    print('{0},{1}'.format(pkginstance, pkg[0]))
                 except IOError as e:
                     if e.errno == errno.EPIPE:
                         sys.exit(1)
