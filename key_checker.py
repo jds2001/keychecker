@@ -20,6 +20,8 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+from __future__ import print_function
+
 # bump this when doing a release
 version = '%prog 0.2'
 import rpm
@@ -57,7 +59,7 @@ def buildKeyList(file=None):
     '''Build a dict of public keys in the rpm database'''
     keys = ts.dbMatch(rpm.RPMTAG_NAME, 'gpg-pubkey')
     for hdr in keys:
-        pubkeys[hdr[rpm.RPMTAG_VERSION]]=hdr[rpm.RPMTAG_SUMMARY][4:].split('<',1)[0].rstrip()
+        pubkeys[hdr[rpm.RPMTAG_VERSION].decode()] = hdr[rpm.RPMTAG_SUMMARY].decode()[4:-1]
     if file:
         lines = open(file, 'r').read().splitlines()
         for line in lines:
@@ -65,19 +67,26 @@ def buildKeyList(file=None):
             try:
                 pubkeys[splitline[0]]=splitline[1]
             except IndexError:
-                sys.stderr.write('invalid input line %s\n' % line)
-                sys.exit(1)
+                sys.exit('invalid input line {0}'.format(line))
 
 
 def getPkgNevra(hdr):
     '''Return a formatted string of the nevra of a header object'''
     if hdr[rpm.RPMTAG_EPOCH]:
-        return '%s-%s:%s-%s.%s' % ( hdr[rpm.RPMTAG_NAME], hdr[rpm.RPMTAG_EPOCH],
-                hdr[rpm.RPMTAG_VERSION], hdr[rpm.RPMTAG_RELEASE],
-                hdr[rpm.RPMTAG_ARCH])
+        return '{0}-{1}:{2}-{3}.{4}'.format(
+            hdr[rpm.RPMTAG_NAME].decode(),
+            hdr[rpm.RPMTAG_EPOCH],
+            hdr[rpm.RPMTAG_VERSION].decode(),
+            hdr[rpm.RPMTAG_RELEASE].decode(),
+            hdr[rpm.RPMTAG_ARCH].decode()
+        )
     else:
-        return '%s-%s-%s.%s' % ( hdr[rpm.RPMTAG_NAME], hdr[rpm.RPMTAG_VERSION],
-                hdr[rpm.RPMTAG_RELEASE], hdr[rpm.RPMTAG_ARCH] )
+        return '{0}-{1}-{2}.{3}'.format(
+            hdr[rpm.RPMTAG_NAME].decode(),
+            hdr[rpm.RPMTAG_VERSION].decode(),
+            hdr[rpm.RPMTAG_RELEASE].decode(),
+            hdr[rpm.RPMTAG_ARCH].decode()
+        )
 
 def getSig(hdr):
     '''Given an rpm header object, extract the signing key, if any.
@@ -89,7 +98,7 @@ def getSig(hdr):
         try:
             return (getPkgNevra(hdr), pubkeys[keyid])
         except KeyError:
-            pubkeys[keyid] = 'Unknown key %s' % keyid
+            pubkeys[keyid] = 'Unknown key {0}'.format(keyid)
             return (getPkgNevra(hdr), pubkeys[keyid])
     else:
         return (getPkgNevra(hdr), 'unsigned')
@@ -109,7 +118,7 @@ def readStdin():
             try:
                 key = pubkeys[keyId]
             except KeyError:
-                pubkeys[keyId] = 'Unknown key %s' % keyId
+                pubkeys[keyId] = 'Unknown key {0}'.format(keyId)
                 key = pubkeys[keyId]
             try:
                 pkgs[key].append(line[0])
@@ -129,7 +138,7 @@ def getPkg(name=None):
     exists = False
     for hdr in mi:
         exists = True
-        if hdr[rpm.RPMTAG_NAME] == 'gpg-pubkey':
+        if hdr[rpm.RPMTAG_NAME].decode() == 'gpg-pubkey':
             continue
         nevra, key = getSig(hdr)
         try:
@@ -138,17 +147,17 @@ def getPkg(name=None):
             pkgs[key] = [nevra]
 
     if not exists:
-        sys.stderr.write('No such package %s\n' % name)
+        print('No such package {0}'.format(name), file=sys.stderr)
 
 def csvOutput(pkgs):
     '''Output data in csv format'''
 
-    for pkg in sorted(pkgs.iteritems()):
+    for pkg in sorted(pkgs.items()):
         if pkg[1]:
             for pkginstance in sorted(pkg[1]):
                 try:
-                    print '%s,%s' % (pkginstance,pkg[0])
-                except IOError, e:
+                    print('{0},{1}'.format(pkginstance, pkg[0]))
+                except IOError as e:
                     if e.errno == errno.EPIPE:
                         sys.exit(1)
                     else:
@@ -157,19 +166,19 @@ def csvOutput(pkgs):
 def listOutput(pkgs):
     '''Output data in separated list format'''
 
-    for pkg in sorted(pkgs.iteritems()):
+    for pkg in sorted(pkgs.items()):
         if pkg[1]:
-            print pkg[0]
-            print '-' * len(pkg[0])
+            print(pkg[0])
+            print('-' * len(pkg[0]))
             for pkginstance in sorted(pkg[1]):
                 try:
-                    print pkginstance
-                except IOError, e:
+                    print(pkginstance)
+                except IOError as e:
                     if e.errno == errno.EPIPE:
                         sys.exit(1)
                     else:
                         raise
-            print
+            print()
 
 if __name__ == '__main__':
     usage = '%prog [options] pkg1 pkg2...'
@@ -186,7 +195,7 @@ if __name__ == '__main__':
     else:
         buildKeyList()
     #pkgs = {}
-    for keyname in pubkeys.itervalues():
+    for keyname in pubkeys.values():
         pkgs[keyname] = []
     pkgs['unsigned'] = []
     if options.stdin:
