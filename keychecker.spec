@@ -1,5 +1,5 @@
 Name:           keychecker
-Version:        0.2
+Version:        1.0
 Release:        1%{?dist}
 Summary:        Generate list of installed packages sorted by GPG key
 
@@ -9,7 +9,9 @@ URL:            https://fedorahosted.org/keychecker
 Source0:        https://fedorahosted.org/released/%{name}/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
-
+%if 0%{rhel} <=6
+Requires:      python-argparse
+%endif
 
 %description
 Separately list rpm's based on the GPG key they were signed with
@@ -34,6 +36,11 @@ rm -rf $RPM_BUILD_ROOT
 %doc README LICENSE known_keys.txt
 
 %changelog
+* Sun Jun 11 2017 Jon Stanley <jonstanley@gmail.com> - 1.0-1
+- Python 3 compatibility (carlgeorge)
+- Migrate to argparse
+- Various minor cleanups
+
 * Sun Aug 16 2009 Jon Stanley <jonstanley@gmail.com> - 0.2-1
 - Add option for getting keys from a file
 
