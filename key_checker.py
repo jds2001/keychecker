@@ -27,6 +27,7 @@ version = '%prog 0.2'
 import rpm
 import sys
 import errno
+import argparse
 try:
     from rpmUtils.miscutils import getSigInfo
 except ImportError:
@@ -47,8 +48,6 @@ except ImportError:
             sigid = 'None'
         infotuple = (sigtype, sigdate, sigid)
         return error, infotuple
-
-from optparse import OptionParser
 
 # Initialize global vars
 ts=rpm.TransactionSet()
@@ -182,13 +181,15 @@ def listOutput(pkgs):
 
 if __name__ == '__main__':
     usage = '%prog [options] pkg1 pkg2...'
-    parser = OptionParser(usage, version=version)
-    parser.add_option('-m', '--machine-readable', action='store_true',
+    parser = argparse.ArgumentParser(usage)
+    parser.add_argument('-m', '--machine-readable', action='store_true',
         dest='mr', help='Produce machine readable output')
-    parser.add_option('-k', '--known-keys', dest='file', help='Read list of known keys from FILE', metavar='FILE')
-    parser.add_option('-s', '--from-stdin', dest='stdin', action='store_true', \
+    parser.add_argument('-k', '--known-keys', dest='file', help='Read list of known keys from FILE', metavar='FILE')
+    parser.add_argument('-s', '--from-stdin', dest='stdin', action='store_true', \
             help='Read a formatted list from stdin')
-    options, args = parser.parse_args()
+    parser.add_argument('packages', nargs='*', help='Packages to consider')
+    options=parser.parse_args()
+    args=options.packages
     pubkeys = {}
     if options.file:
         buildKeyList(options.file)
