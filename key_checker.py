@@ -23,7 +23,7 @@
 from __future__ import print_function
 
 # bump this when doing a release
-version = '%prog 0.2'
+version = '%prog 1.0'
 import rpm
 import sys
 import errno
