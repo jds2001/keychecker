@@ -58,7 +58,7 @@ def buildKeyList(file=None):
     '''Build a dict of public keys in the rpm database'''
     keys = ts.dbMatch(rpm.RPMTAG_NAME, 'gpg-pubkey')
     for hdr in keys:
-        pubkeys[hdr[rpm.RPMTAG_VERSION].decode()] = hdr[rpm.RPMTAG_SUMMARY].decode()[4:-1]
+        pubkeys[hdr[rpm.RPMTAG_VERSION]] = hdr[rpm.RPMTAG_PACKAGER]
     if file:
         lines = open(file, 'r').read().splitlines()
         for line in lines:
@@ -73,18 +73,18 @@ def getPkgNevra(hdr):
     '''Return a formatted string of the nevra of a header object'''
     if hdr[rpm.RPMTAG_EPOCH]:
         return '{0}-{1}:{2}-{3}.{4}'.format(
-            hdr[rpm.RPMTAG_NAME].decode(),
+            hdr[rpm.RPMTAG_NAME],
             hdr[rpm.RPMTAG_EPOCH],
-            hdr[rpm.RPMTAG_VERSION].decode(),
-            hdr[rpm.RPMTAG_RELEASE].decode(),
-            hdr[rpm.RPMTAG_ARCH].decode()
+            hdr[rpm.RPMTAG_VERSION],
+            hdr[rpm.RPMTAG_RELEASE],
+            hdr[rpm.RPMTAG_ARCH]
         )
     else:
         return '{0}-{1}-{2}.{3}'.format(
-            hdr[rpm.RPMTAG_NAME].decode(),
-            hdr[rpm.RPMTAG_VERSION].decode(),
-            hdr[rpm.RPMTAG_RELEASE].decode(),
-            hdr[rpm.RPMTAG_ARCH].decode()
+            hdr[rpm.RPMTAG_NAME],
+            hdr[rpm.RPMTAG_VERSION],
+            hdr[rpm.RPMTAG_RELEASE],
+            hdr[rpm.RPMTAG_ARCH]
         )
 
 def getSig(hdr):
@@ -137,7 +137,7 @@ def getPkg(name=None):
     exists = False
     for hdr in mi:
         exists = True
-        if hdr[rpm.RPMTAG_NAME].decode() == 'gpg-pubkey':
+        if hdr[rpm.RPMTAG_NAME] == 'gpg-pubkey':
             continue
         nevra, key = getSig(hdr)
         try:
